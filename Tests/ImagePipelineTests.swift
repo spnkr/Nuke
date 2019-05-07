@@ -254,6 +254,59 @@ class ImagePipelineTests: XCTestCase {
         wait()
     }
 
+    // MARK: Decompression
+
+    func testDisablingDecompression() {
+        let image = Test.image
+
+        // Given the pipeline which returns a predefined image
+        let pipeline = ImagePipeline {
+            $0.dataLoader = MockDataLoader()
+            $0.imageDecoder = { _ in
+                MockAnonymousImageDecoder { _, _ in
+                    return image
+                }
+            }
+            $0.imageCache = nil
+        }
+
+        // Given request with disabled decompression
+        let request = Test.request.mutated {
+            $0.isDecompressionEnabled = false
+        }
+
+        // When
+        expect(pipeline).toLoadImage(with: request, completion: { response, _ in
+            // Expect image to be the different instance as the decoded one
+            // (we assume that the new instance was creating during decompression)
+            XCTAssertTrue(response?.image === image)
+        })
+        wait()
+    }
+
+    func testDecompression() {
+        let image = Test.image
+
+        // Given the pipeline which returns a predefined image
+        let pipeline = ImagePipeline {
+            $0.dataLoader = MockDataLoader()
+            $0.imageDecoder = { _ in
+                MockAnonymousImageDecoder { _, _ in
+                    return image
+                }
+            }
+            $0.imageCache = nil
+        }
+
+        // When
+        expect(pipeline).toLoadImage(with: Test.request, completion: { response, _ in
+            // Expect image to be the same instance as the decoded one
+            // (we assume that no additional manulations like decoding were performed)
+            XCTAssertTrue(response?.image !== image)
+        })
+        wait()
+    }
+
     // MARK: Disabling Decoding
 
     func testDisablingDecoding() {

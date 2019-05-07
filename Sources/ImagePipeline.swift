@@ -695,7 +695,14 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
         if Configuration.isAnimatedImageDataEnabled && image.animatedImageData != nil {
             return nil // Don't process animated images.
         }
-        return configuration.imageProcessor(image, request)
+        var processors = [AnyImageProcessor]()
+        if let processor = configuration.imageProcessor(image, request) {
+            processors.append(processor)
+        }
+        if request.isDecompressionEnabled && processors.isEmpty {
+            processors.append(AnyImageProcessor(ImageDecompressor()))
+        }
+        return processors.isEmpty ? nil : AnyImageProcessor(ImageProcessorComposition(processors))
     }
 
     private func _session(_ session: ImageLoadingSession, didProcessImage image: Image?, isFinal: Bool, metrics: TaskMetrics, for task: ImageTask) {
