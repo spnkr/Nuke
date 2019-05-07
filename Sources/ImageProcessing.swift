@@ -88,35 +88,33 @@ extension ImageProcessing {
     }
 }
 
-// TODO: rename
-struct NewImageDecompressor: ImageProcessing {
+#if !os(macOS)
+import UIKit
+
+struct ImageDecompressor: ImageProcessing {
     func process(image: Image, context: ImageProcessingContext) -> Image? {
-        guard NewImageDecompressor.isDecompressionNeeded(for: image) ?? false else {
+        guard ImageDecompressor.isDecompressionNeeded(for: image) ?? false else {
             // Image doesn't require decompression (was modified by one of the
             // processors). This scenario can only be possible if the user
-            // provided the processor(s) by the processor decided no to do
+            // provided the processor(s) by the processor decided not to do
             // anything with the given image (e.g. the scaling processor might
             // decide no to change the image size). In this case decompression is
             // still needed.
             return image
         }
-        // TODO: replace with the actual decompressor
-        guard let output = ImageDecompressor().process(image: image, context: context) else {
-            return image
-        }
-
-        NewImageDecompressor.setDecompressionNeeded(false, for: output)
+        let output = decompress(image)
+        ImageDecompressor.setDecompressionNeeded(false, for: output)
         return output
     }
 
     /// Returns true if both have the same `targetSize` and `contentMode`.
-    public static func == (lhs: NewImageDecompressor, rhs: NewImageDecompressor) -> Bool {
+    public static func == (lhs: ImageDecompressor, rhs: ImageDecompressor) -> Bool {
         return true
     }
 
-    // MARK: Managing which image need decompression
+    // MARK: Managing decompression state
 
-    static var isDecompressionNeededAK = "NewImageDecompressor.isDecompressionNeeded.AssociatedKey"
+    static var isDecompressionNeededAK = "ImageDecompressor.isDecompressionNeeded.AssociatedKey"
 
     static func setDecompressionNeeded(_ isDecompressionNeeded: Bool, for image: Image) {
         objc_setAssociatedObject(image, &isDecompressionNeededAK, isDecompressionNeeded, .OBJC_ASSOCIATION_RETAIN)
@@ -127,16 +125,8 @@ struct NewImageDecompressor: ImageProcessing {
     }
 }
 
-#if !os(macOS)
-import UIKit
-
-/// Decompresses and (optionally) scales down input images. Maintains
-/// original aspect ratio.
-///
-/// Decompressing compressed image formats (such as JPEG) can significantly
-/// improve drawing performance as it allows a bitmap representation to be
-/// created in a background rather than on the main thread.
-public struct ImageDecompressor: ImageProcessing {
+/// Scales down the input images. Maintains original aspect ratio.
+public struct ImageScalingProcessor: ImageProcessing {
 
     /// An option for how to resize the image.
     public enum ContentMode {
@@ -174,7 +164,7 @@ public struct ImageDecompressor: ImageProcessing {
     }
 
     /// Returns true if both have the same `targetSize` and `contentMode`.
-    public static func == (lhs: ImageDecompressor, rhs: ImageDecompressor) -> Bool {
+    public static func == (lhs: ImageScalingProcessor, rhs: ImageScalingProcessor) -> Bool {
         return lhs.targetSize == rhs.targetSize && lhs.contentMode == rhs.contentMode
     }
 
@@ -189,7 +179,9 @@ public struct ImageDecompressor: ImageProcessing {
     #endif
 }
 
-internal func decompress(_ image: UIImage, targetSize: CGSize, contentMode: ImageDecompressor.ContentMode, upscale: Bool) -> UIImage {
+// TODO: add a separate method to resize the image, the method should do nothing
+// if the scale if one
+private func decompress(_ image: UIImage, targetSize: CGSize, contentMode: ImageScalingProcessor.ContentMode, upscale: Bool) -> UIImage {
     guard let cgImage = image.cgImage else { return image }
     let bitmapSize = CGSize(width: cgImage.width, height: cgImage.height)
     let scaleHor = targetSize.width / bitmapSize.width
@@ -198,7 +190,7 @@ internal func decompress(_ image: UIImage, targetSize: CGSize, contentMode: Imag
     return decompress(image, scale: CGFloat(upscale ? scale : min(scale, 1)))
 }
 
-internal func decompress(_ image: UIImage, scale: CGFloat) -> UIImage {
+private func decompress(_ image: UIImage, scale: CGFloat = 1) -> UIImage {
     guard let cgImage = image.cgImage else { return image }
 
     let size = CGSize(

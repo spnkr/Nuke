@@ -279,7 +279,7 @@ class ImagePipelineTests: XCTestCase {
 
             XCTAssertTrue(output === image)
 
-            let isDecompressionNeeded = NewImageDecompressor.isDecompressionNeeded(for: output)
+            let isDecompressionNeeded = ImageDecompressor.isDecompressionNeeded(for: output)
             XCTAssertEqual(isDecompressionNeeded, true)
         })
         wait()
@@ -305,7 +305,7 @@ class ImagePipelineTests: XCTestCase {
 
             XCTAssertTrue(output !== image)
 
-            let isDecompressionNeeded = NewImageDecompressor.isDecompressionNeeded(for: output)
+            let isDecompressionNeeded = ImageDecompressor.isDecompressionNeeded(for: output)
             XCTAssertEqual(isDecompressionNeeded, false)
         })
         wait()
@@ -314,13 +314,13 @@ class ImagePipelineTests: XCTestCase {
     func testDecompressionNotPerformedWhenProcessorWasApplied() {
         // Given request with scaling processor
         var request = Test.request
-        request.processor = AnyImageProcessor(ImageDecompressor(targetSize: CGSize(width: 40, height: 40), contentMode: .aspectFit))
+        request.processor = AnyImageProcessor(ImageScalingProcessor(targetSize: CGSize(width: 40, height: 40), contentMode: .aspectFit))
 
         expect(pipeline).toLoadImage(with: request) { response, _ in
             let image = response!.image
 
             // Expect decompression to not be performed
-            let isDecompressionNeeded = NewImageDecompressor.isDecompressionNeeded(for: image)
+            let isDecompressionNeeded = ImageDecompressor.isDecompressionNeeded(for: image)
             XCTAssertNil(isDecompressionNeeded)
         }
         wait()
@@ -335,7 +335,7 @@ class ImagePipelineTests: XCTestCase {
             let image = response!.image
 
             // Expect decompression to be performed (processor was applied but it did nothing)
-            let isDecompressionNeeded = NewImageDecompressor.isDecompressionNeeded(for: image)
+            let isDecompressionNeeded = ImageDecompressor.isDecompressionNeeded(for: image)
             XCTAssertEqual(isDecompressionNeeded, false)
         }
         wait()
