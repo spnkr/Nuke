@@ -172,6 +172,15 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
         /// Image processing queue. Default maximum concurrent task count is 2.
         public var imageProcessingQueue = OperationQueue()
 
+        /// Decompresses the loaded images. `true` by default.
+        ///
+        /// Decompressing compressed image formats (such as JPEG) can significantly
+        /// improve drawing performance as it allows a bitmap representation to be
+        /// created in a background rather than on the main thread.
+        ///
+        /// - note: Decompression isn't currently supported on `macOS`.
+        public var isDecompressionEnabled = true
+
         /// `true` by default. If `true` the pipeline will combine the requests
         /// with the same `loadKey` into a single request. The request only gets
         /// cancelled when all the registered requests are.
@@ -531,6 +540,7 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
 
         // Produce partial image
         if let image = decoder?.decode(data: data, isFinal: false) {
+            NewImageDecompressor.setDecompressionNeeded(true, for: image)
             let scanNumber: Int? = (decoder as? ImageDecoder)?.numberOfScans
             queue.async {
                 let container = ImageContainer(image: image, isFinal: false, scanNumber: scanNumber)
@@ -554,6 +564,9 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
             metrics.decodeStartDate = Date()
             let image = autoreleasepool {
                 decoder.decode(data: data, isFinal: true) // Produce final image
+            }
+            if let image = image {
+                NewImageDecompressor.setDecompressionNeeded(true, for: image)
             }
             metrics.decodeEndDate = Date()
             self?.queue.async {
@@ -699,8 +712,8 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
         if let processor = configuration.imageProcessor(image, request) {
             processors.append(processor)
         }
-        if request.isDecompressionEnabled && processors.isEmpty {
-            processors.append(AnyImageProcessor(ImageDecompressor()))
+        if configuration.isDecompressionEnabled {
+            processors.append(AnyImageProcessor(NewImageDecompressor()))
         }
         return processors.isEmpty ? nil : AnyImageProcessor(ImageProcessorComposition(processors))
     }

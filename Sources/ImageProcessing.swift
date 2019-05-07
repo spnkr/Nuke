@@ -88,6 +88,45 @@ extension ImageProcessing {
     }
 }
 
+// TODO: rename
+struct NewImageDecompressor: ImageProcessing {
+    func process(image: Image, context: ImageProcessingContext) -> Image? {
+        guard NewImageDecompressor.isDecompressionNeeded(for: image) ?? false else {
+            // Image doesn't require decompression (was modified by one of the
+            // processors). This scenario can only be possible if the user
+            // provided the processor(s) by the processor decided no to do
+            // anything with the given image (e.g. the scaling processor might
+            // decide no to change the image size). In this case decompression is
+            // still needed.
+            return image
+        }
+        // TODO: replace with the actual decompressor
+        guard let output = ImageDecompressor().process(image: image, context: context) else {
+            return image
+        }
+
+        NewImageDecompressor.setDecompressionNeeded(false, for: output)
+        return output
+    }
+
+    /// Returns true if both have the same `targetSize` and `contentMode`.
+    public static func == (lhs: NewImageDecompressor, rhs: NewImageDecompressor) -> Bool {
+        return true
+    }
+
+    // MARK: Managing which image need decompression
+
+    static var isDecompressionNeededAK = "NewImageDecompressor.isDecompressionNeeded.AssociatedKey"
+
+    static func setDecompressionNeeded(_ isDecompressionNeeded: Bool, for image: Image) {
+        objc_setAssociatedObject(image, &isDecompressionNeededAK, isDecompressionNeeded, .OBJC_ASSOCIATION_RETAIN)
+    }
+
+    static func isDecompressionNeeded(for image: Image) -> Bool? {
+        return objc_getAssociatedObject(image, &isDecompressionNeededAK) as? Bool
+    }
+}
+
 #if !os(macOS)
 import UIKit
 

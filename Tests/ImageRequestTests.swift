@@ -32,7 +32,6 @@ class ImageRequestTests: XCTestCase {
         request.userInfo = "3"
         request.processor = AnyImageProcessor(MockImageProcessor(id: "4"))
         request.priority = .high
-        request.isDecompressionEnabled = false
 
         // When
         var copy = request
@@ -46,7 +45,6 @@ class ImageRequestTests: XCTestCase {
         XCTAssertEqual(copy.userInfo as? String, "3")
         XCTAssertEqual(copy.processor, AnyImageProcessor(MockImageProcessor(id: "4")))
         XCTAssertEqual(copy.priority, .high)
-        XCTAssertEqual(copy.isDecompressionEnabled, false)
     }
 
     // MARK: - Misc

@@ -28,18 +28,6 @@ public struct ImageRequest {
         }
     }
 
-    /// Decompresses the loaded images. `true` by default.
-    ///
-    /// Decompressing compressed image formats (such as JPEG) can significantly
-    /// improve drawing performance as it allows a bitmap representation to be
-    /// created in a background rather than on the main thread.
-    ///
-    /// - note: Decompression isn't currently supported on `macOS`.
-    public var isDecompressionEnabled: Bool {
-        get { return ref.isDecompressionEnabled }
-        set { mutate { $0.isDecompressionEnabled = newValue } }
-    }
-
     /// Processor to be applied to the image. `nil` by default.
     ///
     /// If the processor is not `nil`, decompression isn't going to run before
@@ -206,7 +194,6 @@ public struct ImageRequest {
         var priority: ImageRequest.Priority = .normal
         var cacheKey: AnyHashable?
         var loadKey: AnyHashable?
-        var isDecompressionEnabled: Bool = true
         var isDecodingDisabled: Bool = false
         var userInfo: Any?
 
@@ -224,7 +211,6 @@ public struct ImageRequest {
             self.priority = ref.priority
             self.cacheKey = ref.cacheKey
             self.loadKey = ref.loadKey
-            self.isDecompressionEnabled = ref.isDecompressionEnabled
             self.isDecodingDisabled = ref.isDecodingDisabled
             self.userInfo = ref.userInfo
         }
