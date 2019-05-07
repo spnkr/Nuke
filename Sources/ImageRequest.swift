@@ -29,9 +29,6 @@ public struct ImageRequest {
     }
 
     /// Processor to be applied to the image. `nil` by default.
-    ///
-    /// If the processor is not `nil`, decompression isn't going to run before
-    /// processing the image to save processing time.
     public var processor: AnyImageProcessor? {
         get { return ref.processor }
         set { mutate { $0.processor = newValue } }

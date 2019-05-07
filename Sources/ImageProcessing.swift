@@ -94,12 +94,8 @@ import UIKit
 struct ImageDecompressor: ImageProcessing {
     func process(image: Image, context: ImageProcessingContext) -> Image? {
         guard ImageDecompressor.isDecompressionNeeded(for: image) ?? false else {
-            // Image doesn't require decompression (was modified by one of the
-            // processors). This scenario can only be possible if the user
-            // provided the processor(s) by the processor decided not to do
-            // anything with the given image (e.g. the scaling processor might
-            // decide no to change the image size). In this case decompression is
-            // still needed.
+            // Image doesn't require decompression. It's possible if the original
+            // image was modified by one of the processors provided in the request.
             return image
         }
         let output = decompress(image)
