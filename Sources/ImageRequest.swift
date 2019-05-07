@@ -33,7 +33,7 @@ public struct ImageRequest {
     /// Decompressing compressed image formats (such as JPEG) can significantly
     /// improve drawing performance as it allows a bitmap representation to be
     /// created in a background rather than on the main thread.
-    public var processor: AnyImageProcessor? {
+    public var processor: ImageProcessing? {
         get {
             // Default processor on macOS is nil, on other platforms is Decompressor
             #if !os(macOS)
@@ -148,16 +148,16 @@ public struct ImageRequest {
 
     /// Initializes a request with the given URL.
     /// - parameter processor: Custom image processer.
-    public init<Processor: ImageProcessing>(url: URL, processor: Processor) {
+    public init(url: URL, processor: ImageProcessing) {
         self.init(url: url)
-        self.processor = AnyImageProcessor(processor)
+        self.processor = processor
     }
 
     /// Initializes a request with the given request.
     /// - parameter processor: Custom image processer.
-    public init<Processor: ImageProcessing>(urlRequest: URLRequest, processor: Processor) {
+    public init(urlRequest: URLRequest, processor: ImageProcessing) {
         self.init(urlRequest: urlRequest)
-        self.processor = AnyImageProcessor(processor)
+        self.processor = processor
     }
 
     /// Initializes a request with the given URL.
@@ -184,7 +184,7 @@ public struct ImageRequest {
         ))
     }
 
-    fileprivate static let decompressor = AnyImageProcessor(ImageDecompressor())
+    fileprivate static let decompressor = ImageDecompressor()
 
     #endif
 
@@ -208,7 +208,7 @@ public struct ImageRequest {
         // default processor anywhere in the `Container` & skip equality tests
         // when the default processor is used
         var _isDefaultProcessorUsed: Bool = true
-        var _processor: AnyImageProcessor?
+        var _processor: ImageProcessing?
         var memoryCacheOptions = MemoryCacheOptions()
         var priority: ImageRequest.Priority = .normal
         var cacheKey: AnyHashable?
@@ -253,18 +253,18 @@ public struct ImageRequest {
 public extension ImageRequest {
     /// Appends a processor to the request. You can append arbitrary number of
     /// processors to the request.
-    mutating func process<P: ImageProcessing>(with processor: P) {
+    mutating func process(with processor: ImageProcessing) {
         guard let existing = self.processor else {
-            self.processor = AnyImageProcessor(processor)
+            self.processor = processor
             return
         }
         // Chain new processor and the existing one.
-        self.processor = AnyImageProcessor(ImageProcessorComposition([existing, AnyImageProcessor(processor)]))
+        self.processor = ImageProcessorComposition([existing, processor])
     }
 
     /// Appends a processor to the request. You can append arbitrary number of
     /// processors to the request.
-    func processed<P: ImageProcessing>(with processor: P) -> ImageRequest {
+    func processed(with processor: ImageProcessing) -> ImageRequest {
         var request = self
         request.process(with: processor)
         return request
@@ -272,14 +272,14 @@ public extension ImageRequest {
 
     /// Appends a processor to the request. You can append arbitrary number of
     /// processors to the request.
-    mutating func process<Key: Hashable>(key: Key, _ closure: @escaping (Image) -> Image?) {
-        process(with: AnonymousImageProcessor<Key>(key, closure))
+    mutating func process(key: String, _ closure: @escaping (Image) -> Image?) {
+        process(with: AnonymousImageProcessor(key, closure))
     }
 
     /// Appends a processor to the request. You can append arbitrary number of
     /// processors to the request.
-    func processed<Key: Hashable>(key: Key, _ closure: @escaping (Image) -> Image?) -> ImageRequest {
-        return processed(with: AnonymousImageProcessor<Key>(key, closure))
+    func processed(key: String, _ closure: @escaping (Image) -> Image?) -> ImageRequest {
+        return processed(with: AnonymousImageProcessor(key, closure))
     }
 }
 
@@ -304,7 +304,7 @@ internal extension ImageRequest {
                 return false
             }
             return (lhs._ref._isDefaultProcessorUsed && rhs._ref._isDefaultProcessorUsed)
-                || (lhs.processor == rhs.processor)
+                || (lhs.processor?.hashableIdentifier == rhs.processor?.hashableIdentifier)
         }
     }
 

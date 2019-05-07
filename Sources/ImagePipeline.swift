@@ -166,9 +166,6 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
         /// Image decoding queue. Default maximum concurrent task count is 1.
         public var imageDecodingQueue = OperationQueue()
 
-        /// This is here just for backward compatibility with `Loader`.
-        internal var imageProcessor: (Image, ImageRequest) -> AnyImageProcessor? = { $1.processor }
-
         /// Image processing queue. Default maximum concurrent task count is 2.
         public var imageProcessingQueue = OperationQueue()
 
@@ -649,10 +646,10 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
         processingSession.updatePriority()
     }
 
-    private func _processingSession(for image: ImageContainer, processor: AnyImageProcessor, session: ImageLoadingSession, task: ImageTask) -> ImageProcessingSession {
+    private func _processingSession(for image: ImageContainer, processor: ImageProcessing, session: ImageLoadingSession, task: ImageTask) -> ImageProcessingSession {
         func findExistingSession() -> ImageProcessingSession? {
             return session.processingSessions.values.first {
-                $0.processor == processor && $0.image.image === image.image
+                $0.processor.hashableIdentifier == processor.hashableIdentifier && $0.image.image === image.image
             }
         }
 
@@ -691,11 +688,11 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
         return processingSession
     }
 
-    private func _processor(for image: Image, request: ImageRequest) -> AnyImageProcessor? {
+    private func _processor(for image: Image, request: ImageRequest) -> ImageProcessing? {
         if Configuration.isAnimatedImageDataEnabled && image.animatedImageData != nil {
             return nil // Don't process animated images.
         }
-        return configuration.imageProcessor(image, request)
+        return request.processor
     }
 
     private func _session(_ session: ImageLoadingSession, didProcessImage image: Image?, isFinal: Bool, metrics: TaskMetrics, for task: ImageTask) {
@@ -866,7 +863,7 @@ private final class ImageLoadingSession {
 }
 
 private final class ImageProcessingSession {
-    let processor: AnyImageProcessor
+    let processor: ImageProcessing
     let image: ImageContainer
     var tasks = Set<ImageTask>()
     weak var operation: Foundation.Operation?
@@ -877,8 +874,9 @@ private final class ImageProcessingSession {
         operation?.cancel()
     }
 
-    init(processor: AnyImageProcessor, image: ImageContainer) {
-        self.processor = processor; self.image = image
+    init(processor: ImageProcessing, image: ImageContainer) {
+        self.processor = processor
+        self.image = image
     }
 
     // Update priority for processing operations (those are per image task,

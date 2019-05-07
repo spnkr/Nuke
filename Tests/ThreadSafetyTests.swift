@@ -260,9 +260,7 @@ final class RandomizedTests: XCTestCase {
             request.priority = every(2) ? .high : .normal
             if every(3) {
                 let size = every(2) ? CGSize(width: 40, height: 40) : CGSize(width: 60, height: 60)
-                request.processor = AnyImageProcessor(
-                    ImageDecompressor(targetSize: size, contentMode: .aspectFit)
-                )
+                request.processor = ImageDecompressor(targetSize: size, contentMode: .aspectFit)
             }
             if every(10) {
                 request.loadKey = url

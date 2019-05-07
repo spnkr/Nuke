@@ -23,31 +23,28 @@ private struct AssociatedKeys {
 // MARK: - MockImageProcessor
 
 class MockImageProcessor: ImageProcessing {
-    let id: String
+    var identifier: String
+
     init(id: String) {
-        self.id = id
+        self.identifier = id
     }
     func process(image: Image, context: ImageProcessingContext) -> Image? {
         var processorIDs: [String] = image.nk_test_processorIDs
-        processorIDs.append(id)
+        processorIDs.append(identifier)
         let processedImage = Image()
         processedImage.nk_test_processorIDs = processorIDs
         return processedImage
-    }
-
-    static func == (lhs: MockImageProcessor, rhs: MockImageProcessor) -> Bool {
-        return lhs.id == rhs.id
     }
 }
 
 // MARK: - MockFailingProcessor
 
-class MockFailingProcessor: Nuke.ImageProcessing {
+class MockFailingProcessor: ImageProcessing {
     func process(image: Image, context: ImageProcessingContext) -> Image? {
         return nil
     }
 
-    static func ==(lhs: MockFailingProcessor, rhs: MockFailingProcessor) -> Bool {
-        return true
+    var identifier: String {
+        return "MockFailingProcessor"
     }
 }

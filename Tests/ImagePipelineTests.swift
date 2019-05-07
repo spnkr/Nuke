@@ -81,26 +81,6 @@ class ImagePipelineTests: XCTestCase {
         wait()
     }
 
-    // MARK: - Configuration
-
-    func testOverridingProcessor() {
-        // Given
-        let pipeline = ImagePipeline {
-            $0.dataLoader = dataLoader
-            $0.imageProcessor = { _, _ in
-                AnyImageProcessor(MockImageProcessor(id: "processorFromOptions"))
-            }
-        }
-        let request = Test.request.processed(with: MockImageProcessor(id: "processorFromRequest"))
-
-        // Then
-        expect(pipeline).toLoadImage(with: request) { response, _ in
-            XCTAssertEqual(response?.image.nk_test_processorIDs.count, 1)
-            XCTAssertEqual(response?.image.nk_test_processorIDs.first, "processorFromOptions")
-        }
-        wait()
-    }
-
     // MARK: - Animated Images
 
     func testAnimatedImagesArentProcessed() {
