@@ -117,6 +117,7 @@
 		0C0FD5D81CA47FE1002A78FB /* ImageProcessing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessing.swift; sourceTree = "<group>"; };
 		0C0FD5D91CA47FE1002A78FB /* ImageRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageRequest.swift; sourceTree = "<group>"; };
 		0C0FD5DF1CA47FE1002A78FB /* ImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageView.swift; sourceTree = "<group>"; };
+		0C179C772282AC50008AB488 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text; path = .swiftlint.yml; sourceTree = "<group>"; };
 		0C1E620A1D6F817700AD5CF5 /* ImageRequestTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageRequestTests.swift; sourceTree = "<group>"; };
 		0C1E623A1D6FA0FB00AD5CF5 /* CancellationTokenTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CancellationTokenTests.swift; sourceTree = "<group>"; };
 		0C2A8CF620970B790013FD65 /* ImagePipelineResumableDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePipelineResumableDataTests.swift; sourceTree = "<group>"; };
@@ -401,6 +402,7 @@
 				0CDB92821DAF9BC600002905 /* README.md */,
 				0CDB92831DAF9BCB00002905 /* Package.swift */,
 				0CA301701DAF9CD1000B9105 /* .travis.yml */,
+				0C179C772282AC50008AB488 /* .swiftlint.yml */,
 			);
 			name = Metadata;
 			sourceTree = "<group>";
@@ -476,6 +478,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0C9174981BAE99EE004A7905 /* Build configuration list for PBXNativeTarget "Nuke" */;
 			buildPhases = (
+				0C179C762282AB64008AB488 /* Lint */,
 				0C91748B1BAE99EE004A7905 /* Sources */,
 				0C91748C1BAE99EE004A7905 /* Frameworks */,
 				0C91748D1BAE99EE004A7905 /* Headers */,
@@ -582,6 +585,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0C179C762282AB64008AB488 /* Lint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = Lint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif which swiftlint >/dev/null; then\n    swiftlint\nelse\n    echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0C7C06731BCA882A00089D7F /* Sources */ = {
