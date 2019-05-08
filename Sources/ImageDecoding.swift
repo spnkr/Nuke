@@ -76,7 +76,9 @@ public final class ImageDecoder: ImageDecoding {
         }
 
         // Found more scans this the previous time
-        guard numberOfScans > self.numberOfScans else { return nil }
+        guard numberOfScans > self.numberOfScans else {
+            return nil
+        }
         self.numberOfScans = numberOfScans
 
         // `> 1` checks that we've received a first scan (SOS) and then received

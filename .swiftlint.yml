@@ -5,7 +5,6 @@ whitelist_rules:
     - closure_spacing
     - colon
     - comma
-    - conditional_returns_on_newline
     - control_statement
     - empty_count
     - empty_parameters

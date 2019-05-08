@@ -90,7 +90,7 @@ public struct ImageRequest {
     /// the order in which requests are executed. `.normal` by default.
     public var priority: Priority {
         get { return ref.priority }
-        set { mutate { $0.priority = newValue }}
+        set { mutate { $0.priority = newValue } }
     }
 
     /// Returns a key that compares requests with regards to caching images.

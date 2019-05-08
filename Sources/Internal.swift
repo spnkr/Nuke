@@ -58,7 +58,9 @@ final class RateLimiter {
     }
 
     private func _setNeedsExecutePendingTasks() {
-        guard !isExecutingPendingTasks else { return }
+        guard !isExecutingPendingTasks else {
+            return
+        }
         isExecutingPendingTasks = true
         // Compute a delay such that by the time the closure is executed the
         // bucket is refilled to a point that is able to execute at least one
@@ -394,12 +396,16 @@ struct ResumableData {
     // internal only for testing purposes
 
     static func removeResumableData(for request: URLRequest) -> ResumableData? {
-        guard let url = request.url?.absoluteString else { return nil }
+        guard let url = request.url?.absoluteString else {
+            return nil
+        }
         return cache.removeValue(forKey: url)
     }
 
     static func storeResumableData(_ data: ResumableData, for request: URLRequest) {
-        guard let url = request.url?.absoluteString else { return }
+        guard let url = request.url?.absoluteString else {
+            return
+        }
         cache.set(data, forKey: url, cost: data.data.count)
     }
 }
@@ -475,13 +481,19 @@ struct Printer {
     }
 
     private func _duration(from: Date?, to: Date?) -> String {
-        guard let from = from else { return "nil" }
-        guard let to = to else { return "unknown" }
+        guard let from = from else {
+            return "nil"
+        }
+        guard let to = to else {
+            return "unknown"
+        }
         return Printer.duration(to.timeIntervalSince(from)) ?? "nil"
     }
 
     static func duration(_ duration: TimeInterval?) -> String? {
-        guard let duration = duration else { return nil }
+        guard let duration = duration else {
+            return nil
+        }
 
         let m: Int = Int(duration) / 60
         let s: Int = Int(duration) % 60

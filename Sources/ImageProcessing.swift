@@ -190,7 +190,9 @@ enum ImageProcessor {
                 return image
         }
         ctx.draw(cgImage, in: CGRect(origin: CGPoint.zero, size: size))
-        guard let decompressed = ctx.makeImage() else { return image }
+        guard let decompressed = ctx.makeImage() else {
+            return image
+        }
         return UIImage(cgImage: decompressed, scale: image.scale, orientation: image.imageOrientation)
     }
 

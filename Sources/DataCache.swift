@@ -151,7 +151,7 @@ public final class DataCache: DataCaching {
 
         _lock.unlock()
 
-        guard let url = _url(for: key) else {
+        guard let url = self.url(for: key) else {
             return nil
         }
         return try? Data(contentsOf: url)
@@ -163,7 +163,7 @@ public final class DataCache: DataCaching {
         _lock.sync {
             let change = _staging.add(data: data, for: key)
             wqueue.async {
-                if let url = self._url(for: key) {
+                if let url = self.url(for: key) {
                     try? data.write(to: url)
                 }
                 self._lock.sync {
@@ -179,7 +179,7 @@ public final class DataCache: DataCaching {
         _lock.sync {
             let change = _staging.removeData(for: key)
             wqueue.async {
-                if let url = self._url(for: key) {
+                if let url = self.url(for: key) {
                     try? FileManager.default.removeItem(at: url)
                 }
                 self._lock.sync {
@@ -246,7 +246,7 @@ public final class DataCache: DataCaching {
         return _filenameGenerator(key)
     }
 
-    /* testable */ func _url(for key: Key) -> URL? {
+    /* testable */ func url(for key: Key) -> URL? {
         guard let filename = self.filename(for: key) else {
             return nil
         }
