@@ -390,16 +390,17 @@ struct ResumableData {
 
     /// Shared between multiple pipelines. Thread safe. In the future version we
     /// might feature more customization options.
-    static var _cache = _Cache<String, ResumableData>(costLimit: 32 * 1024 * 1024, countLimit: 100) // internal only for testing purposes
+    static var cache = Cache<String, ResumableData>(costLimit: 32 * 1024 * 1024, countLimit: 100)
+    // internal only for testing purposes
 
     static func removeResumableData(for request: URLRequest) -> ResumableData? {
         guard let url = request.url?.absoluteString else { return nil }
-        return _cache.removeValue(forKey: url)
+        return cache.removeValue(forKey: url)
     }
 
     static func storeResumableData(_ data: ResumableData, for request: URLRequest) {
         guard let url = request.url?.absoluteString else { return }
-        _cache.set(data, forKey: url, cost: data.data.count)
+        cache.set(data, forKey: url, cost: data.data.count)
     }
 }
 
@@ -407,30 +408,30 @@ struct ResumableData {
 
 /// Helper type for printing nice debug descriptions.
 struct Printer {
-    private(set) var _out = String()
+    private(set) var out = String()
 
     private let timelineFormatter: DateFormatter
 
     init(_ string: String = "") {
-        self._out = string
+        self.out = string
 
         timelineFormatter = DateFormatter()
         timelineFormatter.dateFormat = "HH:mm:ss.SSS"
     }
 
     func output(indent: Int = 0) -> String {
-        return _out.components(separatedBy: .newlines)
+        return out.components(separatedBy: .newlines)
             .map { $0.isEmpty ? "" : String(repeating: " ", count: indent) + $0 }
             .joined(separator: "\n")
     }
 
     mutating func string(_ str: String) {
-        _out.append(str)
+        out.append(str)
     }
 
     mutating func line(_ str: String) {
-        _out.append(str)
-        _out.append("\n")
+        out.append(str)
+        out.append("\n")
     }
 
     mutating func value(_ key: String, _ value: CustomStringConvertible?) {
@@ -459,12 +460,12 @@ struct Printer {
     }
 
     mutating func section(title: String, _ closure: (inout Printer) -> Void) {
-        _out.append(contentsOf: title)
-        _out.append(" {\n")
+        out.append(contentsOf: title)
+        out.append(" {\n")
         var printer = Printer()
         closure(&printer)
-        _out.append(printer.output(indent: 4))
-        _out.append("}\n")
+        out.append(printer.output(indent: 4))
+        out.append("}\n")
     }
 
     // MARK: Formatters
@@ -497,8 +498,8 @@ struct Printer {
 // MARK: - Misc
 
 struct TaskMetrics {
-    var startDate: Date? = nil
-    var endDate: Date? = nil
+    var startDate: Date?
+    var endDate: Date?
 
     static func started() -> TaskMetrics {
         var metrics = TaskMetrics()
@@ -600,8 +601,10 @@ extension String {
     /// // prints "50334ee0b51600df6397ce93ceed4728c37fee4e"
     /// ```
     var sha1: String? {
-        guard let input = self.data(using: .utf8) else { return nil }
-        
+        guard let input = self.data(using: .utf8) else {
+            return nil
+        }
+
         #if swift(>=5.0)
         let hash = input.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) -> [UInt8] in
             var hash = [UInt8](repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
@@ -614,7 +617,7 @@ extension String {
             _ = CC_SHA1($0, CC_LONG(input.count), &hash)
         }
         #endif
-        
+
         return hash.map({ String(format: "%02x", $0) }).joined()
     }
 }

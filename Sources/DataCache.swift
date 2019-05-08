@@ -86,7 +86,7 @@ public final class DataCache: DataCaching {
     private let _lock = NSLock()
     private var _staging = Staging()
 
-    /* testable */ let _wqueue = DispatchQueue(label: "com.github.kean.Nuke.DataCache.WriteQueue")
+    /* testable */ let wqueue = DispatchQueue(label: "com.github.kean.Nuke.DataCache.WriteQueue")
 
     /// A function which generates a filename for the given key. A good candidate
     /// for a filename generator is a _cryptographic_ hash function like SHA1.
@@ -102,7 +102,8 @@ public final class DataCache: DataCaching {
     /// with the given `name` in a `.cachesDirectory` in `.userDomainMask`.
     /// - parameter filenameGenerator: Generates a filename for the given URL.
     /// The default implementation generates a filename using SHA1 hash function.
-    public convenience init(name: String, filenameGenerator: @escaping (String) -> String? = DataCache.filename(for:)) throws {
+    public convenience init(name: String,
+                            filenameGenerator: @escaping (String) -> String? = DataCache.filename(for:)) throws {
         guard let root = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             throw NSError(domain: NSCocoaErrorDomain, code: NSFileNoSuchFileError, userInfo: nil)
         }
@@ -126,7 +127,7 @@ public final class DataCache: DataCaching {
 
     private func _didInit() throws {
         try FileManager.default.createDirectory(at: path, withIntermediateDirectories: true, attributes: nil)
-        _wqueue.asyncAfter(deadline: .now() + initialSweepDelay) { [weak self] in
+        wqueue.asyncAfter(deadline: .now() + initialSweepDelay) { [weak self] in
             self?._performAndScheduleSweep()
         }
     }
@@ -161,7 +162,7 @@ public final class DataCache: DataCaching {
     public func storeData(_ data: Data, for key: Key) {
         _lock.sync {
             let change = _staging.add(data: data, for: key)
-            _wqueue.async {
+            wqueue.async {
                 if let url = self._url(for: key) {
                     try? data.write(to: url)
                 }
@@ -177,7 +178,7 @@ public final class DataCache: DataCaching {
     public func removeData(for key: Key) {
         _lock.sync {
             let change = _staging.removeData(for: key)
-            _wqueue.async {
+            wqueue.async {
                 if let url = self._url(for: key) {
                     try? FileManager.default.removeItem(at: url)
                 }
@@ -193,7 +194,7 @@ public final class DataCache: DataCaching {
     public func removeAll() {
         _lock.sync {
             let change = _staging.removeAll()
-            _wqueue.async {
+            wqueue.async {
                 try? FileManager.default.removeItem(at: self.path)
                 try? FileManager.default.createDirectory(at: self.path, withIntermediateDirectories: true, attributes: nil)
                 self._lock.sync {
@@ -257,21 +258,21 @@ public final class DataCache: DataCaching {
     /// Synchronously waits on the caller's thread until all outstanding disk IO
     /// operations are finished.
     func flush() {
-        _wqueue.sync {}
+        wqueue.sync {}
     }
 
     // MARK: Sweep
 
     private func _performAndScheduleSweep() {
         _sweep()
-        _wqueue.asyncAfter(deadline: .now() + sweepInterval) { [weak self] in
+        wqueue.asyncAfter(deadline: .now() + sweepInterval) { [weak self] in
             self?._performAndScheduleSweep()
         }
     }
 
     /// Schedules a cache sweep to be performed immediately.
     public func sweep() {
-        _wqueue.async {
+        wqueue.async {
             self._sweep()
         }
     }
@@ -316,9 +317,9 @@ public final class DataCache: DataCaching {
         guard let urls = try? FileManager.default.contentsOfDirectory(at: path, includingPropertiesForKeys: keys, options: .skipsHiddenFiles) else {
             return []
         }
-        let _keys = Set(keys)
+        let keys = Set(keys)
         return urls.compactMap {
-            guard let meta = try? $0.resourceValues(forKeys: _keys) else {
+            guard let meta = try? $0.resourceValues(forKeys: keys) else {
                 return nil
             }
             return Entry(url: $0, meta: meta)

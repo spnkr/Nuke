@@ -14,16 +14,16 @@ public struct ImageRequest {
     // MARK: Parameters of the Request
 
     var urlString: String? {
-        return _ref._urlString
+        return ref.urlString
     }
 
     /// The `URLRequest` used for loading an image.
     public var urlRequest: URLRequest {
-        get { return _ref.resource.urlRequest }
+        get { return ref.resource.urlRequest }
         set {
-            _mutate {
+            mutate {
                 $0.resource = Resource.urlRequest(newValue)
-                $0._urlString = newValue.url?.absoluteString
+                $0.urlString = newValue.url?.absoluteString
             }
         }
     }
@@ -37,15 +37,15 @@ public struct ImageRequest {
         get {
             // Default processor on macOS is nil, on other platforms is Decompressor
             #if !os(macOS)
-            return _ref._isDefaultProcessorUsed ? ImageRequest.decompressor : _ref._processor
+            return ref.isDefaultProcessorUsed ? ImageRequest.decompressor : ref.processor
             #else
             return _ref._isDefaultProcessorUsed ? nil : _ref._processor
             #endif
         }
         set {
-            _mutate {
-                $0._isDefaultProcessorUsed = false
-                $0._processor = newValue
+            mutate {
+                $0.isDefaultProcessorUsed = false
+                $0.processor = newValue
             }
         }
     }
@@ -63,8 +63,8 @@ public struct ImageRequest {
 
     /// `MemoryCacheOptions()` (read allowed, write allowed) by default.
     public var memoryCacheOptions: MemoryCacheOptions {
-        get { return _ref.memoryCacheOptions }
-        set { _mutate { $0.memoryCacheOptions = newValue } }
+        get { return ref.memoryCacheOptions }
+        set { mutate { $0.memoryCacheOptions = newValue } }
     }
 
     /// The execution priority of the request.
@@ -89,8 +89,8 @@ public struct ImageRequest {
     /// The relative priority of the operation. This value is used to influence
     /// the order in which requests are executed. `.normal` by default.
     public var priority: Priority {
-        get { return _ref.priority }
-        set { _mutate { $0.priority = newValue }}
+        get { return ref.priority }
+        set { mutate { $0.priority = newValue }}
     }
 
     /// Returns a key that compares requests with regards to caching images.
@@ -99,8 +99,8 @@ public struct ImageRequest {
     /// `URLRequests` and the same processors. `URLRequests` are compared
     /// just by their `URLs`.
     public var cacheKey: AnyHashable? {
-        get { return _ref.cacheKey }
-        set { _mutate { $0.cacheKey = newValue } }
+        get { return ref.cacheKey }
+        set { mutate { $0.cacheKey = newValue } }
     }
 
     /// Returns a key that compares requests with regards to loading images.
@@ -109,8 +109,8 @@ public struct ImageRequest {
     /// `URLRequests` and the same processors. `URLRequests` are compared by
     /// their `URL`, `cachePolicy`, and `allowsCellularAccess` properties.
     public var loadKey: AnyHashable? {
-        get { return _ref.loadKey }
-        set { _mutate { $0.loadKey = newValue } }
+        get { return ref.loadKey }
+        set { mutate { $0.loadKey = newValue } }
     }
 
     /// If decoding is disabled, when the image data is loaded, the pipeline is
@@ -118,30 +118,30 @@ public struct ImageRequest {
     /// error instead. `false` by default.
     var isDecodingDisabled: Bool {
         // This only used by `ImagePreheater` right now
-        get { return _ref.isDecodingDisabled }
-        set { _mutate { $0.isDecodingDisabled = newValue } }
+        get { return ref.isDecodingDisabled }
+        set { mutate { $0.isDecodingDisabled = newValue } }
     }
 
     /// Custom info passed alongside the request.
     public var userInfo: Any? {
-        get { return _ref.userInfo }
-        set { _mutate { $0.userInfo = newValue }}
+        get { return ref.userInfo }
+        set { mutate { $0.userInfo = newValue } }
     }
 
     // MARK: Initializers
 
     /// Initializes a request with the given URL.
     public init(url: URL) {
-        _ref = Container(resource: Resource.url(url))
-        _ref._urlString = url.absoluteString
+        ref = Container(resource: Resource.url(url))
+        ref.urlString = url.absoluteString
         // creating `.absoluteString` takes 50% of time of Request creation,
         // it's still faster than using URLs as cache keys
     }
 
     /// Initializes a request with the given request.
     public init(urlRequest: URLRequest) {
-        _ref = Container(resource: Resource.urlRequest(urlRequest))
-        _ref._urlString = urlRequest.url?.absoluteString
+        ref = Container(resource: Resource.urlRequest(urlRequest))
+        ref.urlString = urlRequest.url?.absoluteString
     }
 
     #if !os(macOS)
@@ -190,25 +190,25 @@ public struct ImageRequest {
 
     // CoW:
 
-    private var _ref: Container
+    private var ref: Container
 
-    private mutating func _mutate(_ closure: (Container) -> Void) {
-        if !isKnownUniquelyReferenced(&_ref) {
-            _ref = Container(container: _ref)
+    private mutating func mutate(_ closure: (Container) -> Void) {
+        if !isKnownUniquelyReferenced(&ref) {
+            ref = Container(container: ref)
         }
-        closure(_ref)
+        closure(ref)
     }
 
     /// Just like many Swift built-in types, `ImageRequest` uses CoW approach to
     /// avoid memberwise retain/releases when `ImageRequest` is passed around.
     private class Container {
         var resource: Resource
-        var _urlString: String? // memoized absoluteString
+        var urlString: String? // memoized absoluteString
         // true unless user set a custom one, this allows us not to store the
         // default processor anywhere in the `Container` & skip equality tests
         // when the default processor is used
-        var _isDefaultProcessorUsed: Bool = true
-        var _processor: AnyImageProcessor?
+        var isDefaultProcessorUsed: Bool = true
+        var processor: AnyImageProcessor?
         var memoryCacheOptions = MemoryCacheOptions()
         var priority: ImageRequest.Priority = .normal
         var cacheKey: AnyHashable?
@@ -224,9 +224,9 @@ public struct ImageRequest {
         /// Creates a copy.
         init(container ref: Container) {
             self.resource = ref.resource
-            self._urlString = ref._urlString
-            self._isDefaultProcessorUsed = ref._isDefaultProcessorUsed
-            self._processor = ref._processor
+            self.urlString = ref.urlString
+            self.isDefaultProcessorUsed = ref.isDefaultProcessorUsed
+            self.processor = ref.processor
             self.memoryCacheOptions = ref.memoryCacheOptions
             self.priority = ref.priority
             self.cacheKey = ref.cacheKey
@@ -288,22 +288,22 @@ extension ImageRequest {
         let request: ImageRequest
 
         func hash(into hasher: inout Hasher) {
-            if let customKey = request._ref.cacheKey {
+            if let customKey = request.ref.cacheKey {
                 hasher.combine(customKey)
             } else {
-                hasher.combine(request._ref._urlString?.hashValue ?? 0)
+                hasher.combine(request.ref.urlString?.hashValue ?? 0)
             }
         }
 
         static func == (lhs: CacheKey, rhs: CacheKey) -> Bool {
             let lhs = lhs.request, rhs = rhs.request
-            if let lhsCustomKey = lhs._ref.cacheKey, let rhsCustomKey = rhs._ref.cacheKey {
+            if let lhsCustomKey = lhs.ref.cacheKey, let rhsCustomKey = rhs.ref.cacheKey {
                 return lhsCustomKey == rhsCustomKey
             }
-            guard lhs._ref._urlString == rhs._ref._urlString else {
+            guard lhs.ref.urlString == rhs.ref.urlString else {
                 return false
             }
-            return (lhs._ref._isDefaultProcessorUsed && rhs._ref._isDefaultProcessorUsed)
+            return (lhs.ref.isDefaultProcessorUsed && rhs.ref.isDefaultProcessorUsed)
                 || (lhs.processor == rhs.processor)
         }
     }
@@ -312,10 +312,10 @@ extension ImageRequest {
         let request: ImageRequest
 
         func hash(into hasher: inout Hasher) {
-            if let customKey = request._ref.loadKey {
+            if let customKey = request.ref.loadKey {
                 hasher.combine(customKey)
             } else {
-                hasher.combine(request._ref._urlString?.hashValue ?? 0)
+                hasher.combine(request.ref.urlString?.hashValue ?? 0)
             }
         }
 
@@ -325,10 +325,10 @@ extension ImageRequest {
                     && lhs.allowsCellularAccess == rhs.allowsCellularAccess
             }
             let lhs = lhs.request, rhs = rhs.request
-            if let lhsCustomKey = lhs._ref.loadKey, let rhsCustomKey = rhs._ref.loadKey {
+            if let lhsCustomKey = lhs.ref.loadKey, let rhsCustomKey = rhs.ref.loadKey {
                 return lhsCustomKey == rhsCustomKey
             }
-            return lhs._ref._urlString == rhs._ref._urlString
+            return lhs.ref.urlString == rhs.ref.urlString
                 && isEqual(lhs.urlRequest, rhs.urlRequest)
         }
     }

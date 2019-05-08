@@ -234,13 +234,17 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
 
     /// Loads an image with the given url.
     @discardableResult
-    public func loadImage(with url: URL, progress: ImageTask.ProgressHandler? = nil, completion: ImageTask.Completion? = nil) -> ImageTask {
+    public func loadImage(with url: URL,
+                          progress: ImageTask.ProgressHandler? = nil,
+                          completion: ImageTask.Completion? = nil) -> ImageTask {
         return loadImage(with: ImageRequest(url: url), progress: progress, completion: completion)
     }
 
     /// Loads an image for the given request using image loading pipeline.
     @discardableResult
-    public func loadImage(with request: ImageRequest, progress: ImageTask.ProgressHandler? = nil, completion: ImageTask.Completion? = nil) -> ImageTask {
+    public func loadImage(with request: ImageRequest,
+                          progress: ImageTask.ProgressHandler? = nil,
+                          completion: ImageTask.Completion? = nil) -> ImageTask {
         let task = ImageTask(taskId: getNextTaskId(), request: request)
         task.delegate = self
         queue.async {
