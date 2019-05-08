@@ -65,7 +65,7 @@ public final class DataCache: DataCaching {
     /// the remaining items is lower than or equal to `sizeLimit * trimRatio` and
     /// the total count is lower than or equal to `countLimit * trimRatio`. `0.7`
     /// by default.
-    internal var trimRatio = 0.7
+    var trimRatio = 0.7
 
     /// The path for the directory managed by the cache.
     public let path: URL

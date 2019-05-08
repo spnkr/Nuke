@@ -152,7 +152,7 @@ public final class ImageCache: ImageCaching {
     }
 }
 
-internal final class _Cache<Key: Hashable, Value> {
+final class _Cache<Key: Hashable, Value> {
     // We don't use `NSCache` because it's not LRU
 
     private var map = [Key: LinkedList<Entry>.Node]()

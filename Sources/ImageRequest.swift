@@ -13,7 +13,7 @@ public struct ImageRequest {
 
     // MARK: Parameters of the Request
 
-    internal var urlString: String? {
+    var urlString: String? {
         return _ref._urlString
     }
 
@@ -71,7 +71,7 @@ public struct ImageRequest {
     public enum Priority: Int, Comparable {
         case veryLow = 0, low, normal, high, veryHigh
 
-        internal var queuePriority: Operation.QueuePriority {
+        var queuePriority: Operation.QueuePriority {
             switch self {
             case .veryLow: return .veryLow
             case .low: return .low
@@ -283,7 +283,7 @@ public extension ImageRequest {
     }
 }
 
-internal extension ImageRequest {
+extension ImageRequest {
     struct CacheKey: Hashable {
         let request: ImageRequest
 

@@ -24,7 +24,7 @@ extension NSLock {
 /// The implementation supports quick bursts of requests which can be executed
 /// without any delays when "the bucket is full". This is important to prevent
 /// rate limiter from affecting "normal" requests flow.
-internal final class RateLimiter {
+final class RateLimiter {
     private let bucket: TokenBucket
     private let queue: DispatchQueue
     private var pending = LinkedList<Task>() // fast append, fast remove first
@@ -117,7 +117,7 @@ internal final class RateLimiter {
 
 // MARK: - Operation
 
-internal final class Operation: Foundation.Operation {
+final class Operation: Foundation.Operation {
     private var _isExecuting = false
     private var _isFinished = false
     private var isFinishCalled = Atomic(false)
@@ -179,7 +179,7 @@ internal final class Operation: Foundation.Operation {
 // MARK: - LinkedList
 
 /// A doubly linked list.
-internal final class LinkedList<Element> {
+final class LinkedList<Element> {
     // first <-> node <-> ... <-> last
     private(set) var first: Node?
     private(set) var last: Node?
@@ -253,7 +253,7 @@ internal final class LinkedList<Element> {
 /// Manages cancellation tokens and signals them when cancellation is requested.
 ///
 /// All `CancellationTokenSource` methods are thread safe.
-internal final class CancellationTokenSource {
+final class CancellationTokenSource {
     /// Returns `true` if cancellation has been requested.
     var isCancelling: Bool {
         return lock.sync { observers == nil }
@@ -311,7 +311,7 @@ internal final class CancellationTokenSource {
 /// The registered objects can respond in whatever manner is appropriate.
 ///
 /// All `CancellationToken` methods are thread safe.
-internal struct CancellationToken {
+struct CancellationToken {
     fileprivate let source: CancellationTokenSource? // no-op when `nil`
 
     /// Returns `true` if cancellation has been requested for this token.
@@ -332,7 +332,7 @@ internal struct CancellationToken {
 
 /// Resumable data support. For more info see:
 /// - https://developer.apple.com/library/content/qa/qa1761/_index.html
-internal struct ResumableData {
+struct ResumableData {
     let data: Data
     let validator: String // Either Last-Modified or ETag
 
@@ -406,8 +406,8 @@ internal struct ResumableData {
 // MARK: - Printer
 
 /// Helper type for printing nice debug descriptions.
-internal struct Printer {
-    private(set) internal var _out = String()
+struct Printer {
+    private(set) var _out = String()
 
     private let timelineFormatter: DateFormatter
 

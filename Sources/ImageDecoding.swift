@@ -28,10 +28,10 @@ public protocol ImageDecoding {
 // The decoder is stateful.
 public final class ImageDecoder: ImageDecoding {
     // `nil` if decoder hasn't detected whether progressive decoding is enabled.
-    private(set) internal var isProgressive: Bool?
+    private(set) var isProgressive: Bool?
     // Number of scans that the decoder has found so far. The last scan might be
     // incomplete at this point.
-    private(set) internal var numberOfScans = 0
+    private(set) var numberOfScans = 0
     private var lastStartOfScan: Int = 0 // Index of the last Start of Scan that we found
     private var scannedIndex: Int = -1 // Index at which previous scan was finished
 
@@ -41,7 +41,7 @@ public final class ImageDecoder: ImageDecoding {
         let format = ImageFormat.format(for: data)
 
         guard !isFinal else { // Just decode the data.
-            let image = _decode(data)
+            let image = decode(data)
             if ImagePipeline.Configuration.isAnimatedImageDataEnabled, case .gif? = format { // Keep original data around in case of GIF
                 image?.animatedImageData = data
             }
@@ -77,7 +77,7 @@ public final class ImageDecoder: ImageDecoding {
         // `> 1` checks that we've received a first scan (SOS) and then received
         // and also received a second scan (SOS). This way we know that we have
         // at least one full scan available.
-        return (numberOfScans > 1 && lastStartOfScan > 0) ? _decode(data[0..<lastStartOfScan]) : nil
+        return (numberOfScans > 1 && lastStartOfScan > 0) ? decode(data[0..<lastStartOfScan]) : nil
     }
 }
 
@@ -95,7 +95,7 @@ public final class ImageDecoder: ImageDecoding {
 // See also https://github.com/AFNetworking/AFNetworking/issues/2572
 private let _queue = DispatchQueue(label: "com.github.kean.Nuke.DataDecoder")
 
-internal func _decode(_ data: Data) -> Image? {
+func decode(_ data: Data) -> Image? {
     return _queue.sync {
         #if os(macOS)
         return NSImage(data: data)
@@ -143,7 +143,7 @@ public final class ImageDecoderRegistry {
 /// Image decoding context used when selecting which decoder to use.
 public struct ImageDecodingContext {
     public let request: ImageRequest
-    internal let urlResponse: URLResponse?
+    let urlResponse: URLResponse?
     public let data: Data
 }
 

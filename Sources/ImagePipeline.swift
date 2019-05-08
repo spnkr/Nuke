@@ -45,7 +45,7 @@ public /* final */ class ImageTask: Hashable {
 
     fileprivate weak var session: ImageLoadingSession?
 
-    internal init(taskId: Int, request: ImageRequest) {
+    init(taskId: Int, request: ImageRequest) {
         self.taskId = taskId
         self.request = request
         self.priority = request.priority
@@ -159,7 +159,7 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
 
         /// Default implementation uses shared `ImageDecoderRegistry` to create
         /// a decoder that matches the context.
-        internal var imageDecoder: (ImageDecodingContext) -> ImageDecoding = {
+        var imageDecoder: (ImageDecodingContext) -> ImageDecoding = {
             return ImageDecoderRegistry.shared.decoder(for: $0)
         }
 
@@ -167,7 +167,7 @@ public /* final */ class ImagePipeline: ImageTaskDelegate {
         public var imageDecodingQueue = OperationQueue()
 
         /// This is here just for backward compatibility with `Loader`.
-        internal var imageProcessor: (Image, ImageRequest) -> AnyImageProcessor? = { $1.processor }
+        var imageProcessor: (Image, ImageRequest) -> AnyImageProcessor? = { $1.processor }
 
         /// Image processing queue. Default maximum concurrent task count is 2.
         public var imageProcessingQueue = OperationQueue()

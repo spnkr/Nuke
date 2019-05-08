@@ -18,7 +18,7 @@ public struct ImageProcessingContext {
 }
 
 /// Composes multiple processors.
-internal struct ImageProcessorComposition: ImageProcessing {
+struct ImageProcessorComposition: ImageProcessing {
     private let processors: [AnyImageProcessor]
 
     /// Composes multiple processors.
@@ -64,7 +64,7 @@ public struct AnyImageProcessor: ImageProcessing {
     }
 }
 
-internal struct AnonymousImageProcessor<Key: Hashable>: ImageProcessing {
+struct AnonymousImageProcessor<Key: Hashable>: ImageProcessing {
     private let _key: Key
     private let _closure: (Image) -> Image?
 
@@ -150,7 +150,7 @@ public struct ImageDecompressor: ImageProcessing {
     #endif
 }
 
-internal func decompress(_ image: UIImage, targetSize: CGSize, contentMode: ImageDecompressor.ContentMode, upscale: Bool) -> UIImage {
+func decompress(_ image: UIImage, targetSize: CGSize, contentMode: ImageDecompressor.ContentMode, upscale: Bool) -> UIImage {
     guard let cgImage = image.cgImage else { return image }
     let bitmapSize = CGSize(width: cgImage.width, height: cgImage.height)
     let scaleHor = targetSize.width / bitmapSize.width
@@ -159,7 +159,7 @@ internal func decompress(_ image: UIImage, targetSize: CGSize, contentMode: Imag
     return decompress(image, scale: CGFloat(upscale ? scale : min(scale, 1)))
 }
 
-internal func decompress(_ image: UIImage, scale: CGFloat) -> UIImage {
+func decompress(_ image: UIImage, scale: CGFloat) -> UIImage {
     guard let cgImage = image.cgImage else { return image }
 
     let size = CGSize(
